@@ -30,10 +30,18 @@ const ProductCard = ({ product }: Iprops) => {
       </div>
 
       <div className='flex items-center justify-between space-x-2 mt-5'>
-        <Button className='bg-blue-500' width='w-full' onClick={() => {}}>
+        <Button
+          className='bg-indigo-700 hover:bg-indigo-800'
+          width='w-full'
+          onClick={() => {}}
+        >
           Edit
         </Button>
-        <Button className='bg-green-500' width='w-full' onClick={() => {}}>
+        <Button
+          className='bg-[#c2344d] hover:bg-red-800'
+          width='w-full'
+          onClick={() => {}}
+        >
           Delete
         </Button>
       </div>

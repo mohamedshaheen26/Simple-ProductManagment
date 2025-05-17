@@ -7,7 +7,7 @@ interface Iprops extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 const Button = ({ children, className, width = "w-full", ...rest }: Iprops) => {
   return (
     <button
-      className={`rounded-md text-white p-2 ${width} ${className}`}
+      className={`rounded-lg text-white px-3 py-3 duration-200 font-medium cursor-pointer ${width} ${className}`}
       {...rest}
     >
       {children}
