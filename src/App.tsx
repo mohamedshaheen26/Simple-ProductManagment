@@ -7,8 +7,10 @@ import Button from "./components/ui/Button";
 import Input from "./components/ui/Input";
 import type { IProduct } from "./interfaces";
 import { validateProduct } from "./Validations";
+import ErrorMsg from "./components/ErrorMsg";
 
 function App() {
+  /* State */
   const defaultProduct = {
     title: "",
     description: "",
@@ -20,27 +22,59 @@ function App() {
       imageURL: "",
     },
   };
-
   const [Product, setProduct] = useState<IProduct>(defaultProduct);
+  const [errors, setErrors] = useState({
+    title: "",
+    description: "",
+    imageURL: "",
+    price: "",
+  });
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  /* Handlers */
+  const open = () => setIsOpen(true);
+  const closeModal = () => setIsOpen(false);
 
   const onchangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+
     setProduct((prevProduct) => ({
       ...prevProduct,
       [name]: value,
     }));
-  };
 
-  const onSubmitHandler = (event: FormEvent<HTMLFormElement>): void => {
-    event.preventDefault();
-    const errors = validateProduct({
-      title: Product.title,
-      description: Product.description,
-      imageURL: Product.imageURL,
-      price: Product.price,
-    });
+    if (!isSubmitted) return;
 
-    console.log(errors);
+    let errorMessage = "";
+
+    switch (name) {
+      case "title":
+        if (value.trim().length < 10 || value.trim().length > 80) {
+          errorMessage = "Title must be between 10 and 80 characters.";
+        }
+        break;
+      case "description":
+        if (value.trim().length < 10 || value.trim().length > 200) {
+          errorMessage = "Description must be between 10 and 200 characters.";
+        }
+        break;
+      case "imageURL":
+        if (!value.trim()) {
+          errorMessage = "Image URL is required.";
+        }
+        break;
+      case "price":
+        if (!/^\d+(\.\d{1,2})?$/.test(value) || parseFloat(value) <= 0) {
+          errorMessage = "Price must be a valid positive number.";
+        }
+        break;
+    }
+
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: errorMessage,
+    }));
   };
 
   const onCancel = () => {
@@ -48,11 +82,40 @@ function App() {
     closeModal();
   };
 
-  let [isOpen, setIsOpen] = useState(false);
+  const onSubmitHandler = (event: FormEvent<HTMLFormElement>): void => {
+    event.preventDefault();
+    setIsSubmitted(true);
 
-  const open = () => setIsOpen(true);
+    const { title, description, imageURL, price } = Product;
 
-  const closeModal = () => setIsOpen(false);
+    const errors = validateProduct({
+      title,
+      description,
+      imageURL,
+      price,
+    });
+
+    const isValid =
+      Object.values(errors).some((value) => value === "") &&
+      Object.values(errors).every((value) => value === "");
+
+    if (!isValid) {
+      setErrors(errors);
+      return;
+    }
+
+    console.log("Product submitted:", Product);
+
+    setProduct(defaultProduct);
+    setErrors({
+      title: "",
+      description: "",
+      imageURL: "",
+      price: "",
+    });
+    setIsSubmitted(false);
+    closeModal();
+  };
 
   const renderProductList = productList.map((product) => (
     <ProductCard key={product.id} product={product} />
@@ -73,6 +136,7 @@ function App() {
         value={Product[input.name]}
         onChange={onchangeHandler}
       />
+      <ErrorMsg message={errors[input.name]} />
     </div>
   ));
 
