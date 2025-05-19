@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import "./App.css";
 import ProductCard from "./components/ProductCard";
 import Modal from "./components/ui/Modal";
@@ -6,9 +6,10 @@ import { formInputsList, productList } from "./data";
 import Button from "./components/ui/Button";
 import Input from "./components/ui/Input";
 import type { IProduct } from "./interfaces";
+import { validateProduct } from "./Validations";
 
 function App() {
-  const [Product, setProduct] = useState<IProduct>({
+  const defaultProduct = {
     title: "",
     description: "",
     imageURL: "",
@@ -18,7 +19,9 @@ function App() {
       name: "",
       imageURL: "",
     },
-  });
+  };
+
+  const [Product, setProduct] = useState<IProduct>(defaultProduct);
 
   const onchangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -26,6 +29,23 @@ function App() {
       ...prevProduct,
       [name]: value,
     }));
+  };
+
+  const onSubmitHandler = (event: FormEvent<HTMLFormElement>): void => {
+    event.preventDefault();
+    const errors = validateProduct({
+      title: Product.title,
+      description: Product.description,
+      imageURL: Product.imageURL,
+      price: Product.price,
+    });
+
+    console.log(errors);
+  };
+
+  const onCancel = () => {
+    setProduct(defaultProduct);
+    closeModal();
   };
 
   let [isOpen, setIsOpen] = useState(false);
@@ -50,7 +70,7 @@ function App() {
         type={input.type}
         id={input.id}
         name={input.name}
-        value={""}
+        value={Product[input.name]}
         onChange={onchangeHandler}
       />
     </div>
@@ -65,11 +85,20 @@ function App() {
         {renderProductList}
       </div>
       <Modal isOpen={isOpen} closeModal={closeModal} title='Add a New Product'>
-        <div className='space-y-3'>{renderFormInputs}</div>
-        <div className='flex items-center space-x-3'>
-          <Button className='bg-indigo-700 hover:bg-indigo-800'>Submit</Button>
-          <Button className='bg-gray-300 hover:bg-gray-400'>Cancel</Button>
-        </div>
+        <form className='space-y-3' onSubmit={onSubmitHandler}>
+          {renderFormInputs}
+          <div className='flex items-center space-x-3'>
+            <Button className='bg-indigo-700 hover:bg-indigo-800'>
+              Submit
+            </Button>
+            <Button
+              className='bg-gray-300 hover:bg-gray-400'
+              onClick={onCancel}
+            >
+              Cancel
+            </Button>
+          </div>
+        </form>
       </Modal>
     </main>
   );
